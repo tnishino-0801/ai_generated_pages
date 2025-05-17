@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>インボイス制度と課税事業者の基礎知識</title>
+    <style>
+        :root {
+            --primary-color: #3a66c5;
+            --secondary-color: #f1f5ff;
+            --accent-color: #ff6b6b;
+            --text-color: #333;
+            --light-text: #666;
+            --border-color: #dde5f5;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            line-height: 1.7;
+            color: var(--text-color);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+        
+        header {
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 30px;
+            font-size: 28px;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            margin-top: 40px;
+            font-size: 22px;
+            border-left: 5px solid var(--primary-color);
+            padding-left: 15px;
+            background-color: var(--secondary-color);
+            padding: 10px 15px;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        h3 {
+            color: var(--primary-color);
+            font-size: 18px;
+            margin-top: 25px;
+            padding-bottom: 5px;
+            border-bottom: 1px dotted var(--border-color);
+        }
+        
+        p {
+            margin: 15px 0;
+            font-size: 16px;
+        }
+        
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .highlight-box {
+            background-color: var(--secondary-color);
+            border-left: 4px solid var(--primary-color);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .important {
+            background-color: #fff8dc;
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .warning {
+            background-color: #fff0f0;
+            border-left: 4px solid #c92a2a;
+        }
+        
+        .answer-box {
+            display: flex;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .answer {
+            padding: 15px;
+            flex: 1;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .answer:last-child {
+            border-right: none;
+        }
+        
+        .answer h3 {
+            margin-top: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .note {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--light-text);
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .flow-chart {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .flow-step {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .step-number {
+            background-color: var(--primary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex-grow: 1;
+            border-left: 2px solid var(--border-color);
+            padding-left: 15px;
+        }
+        
+        .arrow-down {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid var(--border-color);
+            margin: 5px auto 5px 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            font-size: 14px;
+            color: var(--light-text);
+        }
+        
+        @media (max-width: 700px) {
+            body {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            .answer-box {
+                flex-direction: column;
+            }
+            
+            .answer {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .answer:last-child {
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>インボイス制度と課税事業者の基礎知識</h1>
+        
+        <div class="highlight-box">
+            <p>このページでは、インボイス制度の概要、課税事業者の定義、インボイス登録の流れと「事業を開始した課税期間の初日から登録を受けるか」という質問の答え方について解説します。</p>
+        </div>
+    </header>
+    
+    <section>
+        <h2>インボイス制度とは？</h2>
+        <p>インボイス制度（適格請求書等保存方式）は、2023年10月1日から導入された消費税の仕入税額控除の方式です。</p>
+        
+        <div class="highlight-box">
+            <p><strong>インボイス（適格請求書）</strong>とは、売り手が買い手に対して正確な消費税率や税額などを明示する請求書のことで、従来の請求書に以下の項目が追加されたものです：</p>
+            <ul>
+                <li>登録番号（T+法人番号などの数字）</li>
+                <li>適用税率</li>
+                <li>税率ごとに区分した消費税額</li>
+            </ul>
+        </div>
+        
+        <h3>インボイス制度の重要ポイント</h3>
+        <ul>
+            <li>買い手が仕入税額控除を受けるには、売り手が発行するインボイスの保存が必要</li>
+            <li>インボイスを発行できるのは、「適格請求書発行事業者」として登録した事業者のみ</li>
+            <li>登録していない事業者との取引は、原則として仕入税額控除の対象外となる</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>課税事業者とは？</h2>
+        <p>課税事業者とは、<strong>消費税の納税義務がある事業者</strong>のことです。</p>
+        
+        <div class="highlight-box">
+            <ul>
+                <li>課税売上高（消費税が課税される売上高）が一定期間（通常は前々年度）で<strong>1,000万円を超える</strong>法人や個人事業主が該当します</li>
+                <li>課税事業者は、消費税を国に納付する義務があります</li>
+                <li>売上高が1,000万円以下の場合は「<strong>免税事業者</strong>」となり、消費税の納税義務はありません</li>
+            </ul>
+        </div>
+        
+        <h3>課税事業者と免税事業者の違い</h3>
+        <table>
+            <tr>
+                <th>区分</th>
+                <th>課税事業者</th>
+                <th>免税事業者</th>
+            </tr>
+            <tr>
+                <td>課税売上高</td>
+                <td>1,000万円超</td>
+                <td>1,000万円以下</td>
+            </tr>
+            <tr>
+                <td>消費税の納税義務</td>
+                <td>あり</td>
+                <td>なし</td>
+            </tr>
+            <tr>
+                <td>インボイス発行</td>
+                <td>登録すれば可能</td>
+                <td>登録すれば可能<br>（ただし登録と同時に課税事業者になる）</td>
+            </tr>
+        </table>
+    </section>
+    
+    <section>
+        <h2>インボイス登録とは？</h2>
+        <p>インボイス登録とは、正式には「<strong>適格請求書発行事業者</strong>」として国税庁に登録し、インボイス（適格請求書）を発行できるようになるための手続きです。</p>
+        
+        <h3>インボイス登録のメリット</h3>
+        <ul>
+            <li><strong>取引先が仕入税額控除を適用できる：</strong>取引先は消費税の仕入税額控除を受けられるため、継続的な取引や新規取引の獲得につながりやすくなります</li>
+            <li><strong>取引の透明性・信頼性の向上：</strong>インボイスを発行することで、税率や税額の認識が明確になり、取引先からの信用度が高まります</li>
+            <li><strong>新規取引先の獲得チャンス：</strong>インボイス登録していないと、取引先が仕入税額控除を受けられないため、登録している事業者が優先される傾向があります</li>
+            <li><strong>請求業務の効率化（電子インボイス対応の場合）：</strong>電子化により、業務効率やペーパーレス化が進みます</li>
+        </ul>
+        
+        <div class="highlight-box warning">
+            <h3>注意点</h3>
+            <ul>
+                <li>登録は任意ですが、登録しない場合は取引先からの発注が減る、または単価を下げられるリスクがあります</li>
+                <li><strong>免税事業者が登録すると、その日から課税事業者となり、消費税の納税義務が発生します</strong></li>
+            </ul>
+        </div>
+    </section>
+    
+    <section>
+        <h2>インボイス登録の流れ</h2>
+        
+        <div class="flow-chart">
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>申請書のダウンロード・作成</h3>
+                    <p>国税庁のWebサイトから「適格請求書発行事業者の登録申請書」をダウンロードし、必要事項を記入します。</p>
+                    <p>免税事業者か課税事業者か、新規設立かなどによって記載欄が異なるので注意が必要です。</p>
+                </div>
+            </div>
+            
+            <div class="arrow-down"></div>
+            
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>申請書の提出</h3>
+                    <p>記入済みの申請書を、事業所の管轄税務署または「インボイス登録センター」に郵送します。</p>
+                </div>
+            </div>
+            
+            <div class="arrow-down"></div>
+            
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>審査・登録番号の発行</h3>
+                    <p>審査が通ると、国税庁から「登録番号（T+11桁）」が通知されます。</p>
+                </div>
+            </div>
+            
+            <div class="arrow-down"></div>
+            
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>登録番号の通知・管理</h3>
+                    <p>取引先に登録番号を通知し、インボイス発行時に登録番号等を記載します。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section>
+        <h2>「事業を開始した課税期間の初日から登録を受けるか」という質問の答え方</h2>
+        
+        <p>この質問は、「<strong>インボイス発行事業者の登録を、事業を始めた課税期間の初日から受けるかどうか</strong>」という意味です。</p>
+        
+        <div class="answer-box">
+            <div class="answer">
+                <h3>「はい」と答える場合</h3>
+                <p>事業開始と同時にインボイス発行事業者として登録したい場合</p>
+            </div>
+            <div class="answer">
+                <h3>「いいえ」と答える場合</h3>
+                <p>事業開始後、途中から登録したい場合<br>（この場合、登録を希望する日を別途記載します）</p>
+            </div>
+        </div>
+        
+        <div class="highlight-box important">
+            <p>この設問は、あなたが「課税事業者」として事業開始日からインボイス発行事業者の登録を希望するかどうかを確認するものです。</p>
+        </div>
+    </section>
+    
+    <section>
+        <h2>補足情報</h2>
+        
+        <ul>
+            <li>免税事業者がインボイス発行事業者に登録すると、その日から課税事業者となり、消費税の納税義務が発生します</li>
+            <li>課税事業者として登録する場合は、原則として「消費税課税事業者選択届出書」の提出が必要です</li>
+            <li>インボイス制度の特例期間（2023年10月1日～2029年9月30日）に限り、上記届出書の提出が免除されるケースもあります</li>
+        </ul>
+    </section>
+    
+    <div class="note">
+        <p>※この情報は2025年5月時点のものです。最新の情報については、国税庁のホームページや税理士等の専門家にご確認ください。</p>
+    </div>
+    
+    <div class="footer">
+        <p>参考：国税庁ホームページ、各種会計・税務サイトの情報を元に作成</p>
+    </div>
+</body>
+</html>
