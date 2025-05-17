@@ -258,6 +258,16 @@
                 </select>
             </div>
             
+            <div class="form-group">
+                <label for="contrastRatio">最小コントラスト比</label>
+                <select id="contrastRatio" class="form-control">
+                    <option value="3">3:1 (大きなテキスト向け)</option>
+                    <option value="4.5" selected>4.5:1 (通常テキスト向け)</option>
+                    <option value="7">7:1 (高コントラスト)</option>
+                </select>
+                <p class="form-text text-muted">テキストに使用する色と背景色の間に必要なコントラスト比</p>
+            </div>
+            
             <button id="generateBtn" class="btn">カラーパレットを生成</button>
         </div>
         
@@ -458,6 +468,7 @@
         function generateColorPalette() {
             const colorCount = parseInt(document.getElementById('colorCount').value);
             const harmonyType = document.getElementById('harmonyType').value;
+            const minContrastRatio = parseFloat(document.getElementById('contrastRatio').value);
             
             // 固定色を収集
             const fixedColors = [];
@@ -477,36 +488,118 @@
                 usedHarmony = harmonies[Math.floor(Math.random() * harmonies.length)];
             }
             
-            switch (usedHarmony) {
-                case 'monochromatic':
-                    palette = generateMonochromatic(colorCount, fixedColors);
-                    break;
-                case 'analogous':
-                    palette = generateAnalogous(colorCount, fixedColors);
-                    break;
-                case 'complementary':
-                    palette = generateComplementary(colorCount, fixedColors);
-                    break;
-                case 'split-complementary':
-                    palette = generateSplitComplementary(colorCount, fixedColors);
-                    break;
-                case 'triadic':
-                    palette = generateTriadic(colorCount, fixedColors);
-                    break;
-                case 'tetradic':
-                    palette = generateTetradic(colorCount, fixedColors);
-                    break;
-                default:
-                    palette = generateAnalogous(colorCount, fixedColors);
-            }
+            // 試行回数の制限
+            const maxAttempts = 50;
+            let attempts = 0;
+            let validPalette = false;
             
-            // 色の役割と面積比率を割り当て
-            assignRolesAndPercentages(palette);
+            while (!validPalette && attempts < maxAttempts) {
+                attempts++;
+                
+                switch (usedHarmony) {
+                    case 'monochromatic':
+                        palette = generateMonochromatic(colorCount, fixedColors);
+                        break;
+                    case 'analogous':
+                        palette = generateAnalogous(colorCount, fixedColors);
+                        break;
+                    case 'complementary':
+                        palette = generateComplementary(colorCount, fixedColors);
+                        break;
+                    case 'split-complementary':
+                        palette = generateSplitComplementary(colorCount, fixedColors);
+                        break;
+                    case 'triadic':
+                        palette = generateTriadic(colorCount, fixedColors);
+                        break;
+                    case 'tetradic':
+                        palette = generateTetradic(colorCount, fixedColors);
+                        break;
+                    default:
+                        palette = generateAnalogous(colorCount, fixedColors);
+                }
+                
+                // 色の役割と面積比率を割り当て
+                assignRolesAndPercentages(palette);
+                
+                // パレットのコントラスト比をチェック
+                if (checkPaletteContrast(palette, minContrastRatio)) {
+                    validPalette = true;
+                } else if (attempts >= maxAttempts) {
+                    console.log(`最大試行回数(${maxAttempts})に達しました。最適なパレットを生成できませんでした。`);
+                    // 固定色が制約を満たすのを妨げている場合は警告
+                    if (fixedColors.length > 0) {
+                        alert(`固定色との組み合わせで十分なコントラスト比(${minContrastRatio}:1)を確保できませんでした。別の色を試すか、コントラスト比の要件を緩和してください。`);
+                    }
+                }
+            }
             
             // パレットの表示
             displayPalette(palette, usedHarmony);
             
             return palette;
+        }
+        
+        function checkPaletteContrast(palette, minContrastRatio) {
+            // ベースカラーとメインカラーを特定
+            const baseColor = palette.find(color => color.role.includes('ベース'));
+            const mainColors = palette.filter(color => 
+                color.role.includes('メイン') || 
+                color.role.includes('セカンダリー') ||
+                color.role.includes('アクセント')
+            );
+            
+            if (!baseColor || mainColors.length === 0) {
+                return false;
+            }
+            
+            const baseRgb = hexToRgb(baseColor.hex);
+            
+            // メインカラーとのコントラスト比をチェック
+            let hasGoodContrast = mainColors.some(color => {
+                const colorRgb = hexToRgb(color.hex);
+                const ratio = getContrastRatio(baseRgb, colorRgb);
+                return ratio >= minContrastRatio;
+            });
+            
+            return hasGoodContrast;
+        }
+        
+        function adjustColorForContrast(color, baseColor, minContrastRatio) {
+            const baseRgb = hexToRgb(baseColor);
+            const colorRgb = hexToRgb(color);
+            const currentRatio = getContrastRatio(baseRgb, colorRgb);
+            
+            if (currentRatio >= minContrastRatio) {
+                return color; // 既に十分なコントラスト比がある
+            }
+            
+            const colorHsl = hexToHsl(color);
+            const baseHsl = hexToHsl(baseColor);
+            
+            // コントラスト比を向上させるために明度を調整
+            const baseLightness = baseHsl.l;
+            let newLightness;
+            
+            if (baseLightness > 50) {
+                // ベースカラーが明るい場合、対象色を暗くする
+                newLightness = Math.max(0, colorHsl.l - 20);
+            } else {
+                // ベースカラーが暗い場合、対象色を明るくする
+                newLightness = Math.min(100, colorHsl.l + 20);
+            }
+            
+            // 新しい色を生成
+            const adjustedColor = hslToHex(colorHsl.h, colorHsl.s, newLightness);
+            const adjustedRgb = hexToRgb(adjustedColor);
+            const newRatio = getContrastRatio(baseRgb, adjustedRgb);
+            
+            // 必要に応じて再帰的に調整
+            if (newRatio < minContrastRatio && Math.abs(newLightness - colorHsl.l) < 50) {
+                return adjustColorForContrast(adjustedColor, baseColor, minContrastRatio);
+            }
+            
+            return adjustedColor;
         }
         
         function generateMonochromatic(colorCount, fixedColors) {
@@ -545,7 +638,18 @@
                     }
                 }
                 
-                palette.push(hslToHex(baseHsl.h, s, l));
+                // より明確な明度の差を確保
+                const newColor = hslToHex(baseHsl.h, s, l);
+                
+                // すでに似た明度の色がないか確認
+                const tooSimilar = palette.some(existingColor => {
+                    const existingHsl = hexToHsl(existingColor);
+                    return Math.abs(existingHsl.l - l) < 15;
+                });
+                
+                if (!tooSimilar) {
+                    palette.push(newColor);
+                }
             }
             
             return palette;
@@ -600,7 +704,18 @@
                     l = avgL < 50 ? getRandomInt(60, 80) : getRandomInt(20, 40);
                 }
                 
-                palette.push(hslToHex(newHue, s, l));
+                // 明度差を確保
+                const newColor = hslToHex(newHue, s, l);
+                
+                // すでに似た明度と彩度の色がないか確認
+                const tooSimilar = palette.some(existingColor => {
+                    const existingHsl = hexToHsl(existingColor);
+                    return Math.abs(existingHsl.l - l) < 15 && Math.abs(existingHsl.s - s) < 15;
+                });
+                
+                if (!tooSimilar) {
+                    palette.push(newColor);
+                }
             }
             
             return palette;
@@ -1157,6 +1272,9 @@
             const contrastResults = document.getElementById('contrastResults');
             contrastResults.innerHTML = '';
             
+            // 選択されたコントラスト比の要件
+            const requiredContrast = parseFloat(document.getElementById('contrastRatio').value);
+            
             // ベースカラーまたは最も明るい色をバックグラウンドとして使用
             const baseColor = palette.find(color => color.role.includes('ベース')) || 
                               palette.reduce((prev, current) => {
@@ -1183,6 +1301,7 @@
                 const ratio = getContrastRatio(baseRgb, colorRgb);
                 const ratioText = ratio.toFixed(2);
                 
+                const isGoodForRequirement = ratio >= requiredContrast;
                 const isGoodForSmallText = ratio >= 4.5;
                 const isGoodForLargeText = ratio >= 3;
                 
@@ -1192,6 +1311,9 @@
                         <span class="color-swatch" style="background-color: ${baseColor.hex}"></span> vs 
                         <span class="color-swatch" style="background-color: ${color.hex}"></span>
                         コントラスト比: ${ratioText}:1 
+                        <span class="${isGoodForRequirement ? 'good-contrast' : 'bad-contrast'}">
+                            ${isGoodForRequirement ? '✓' : '✗'} 設定した要件 (${requiredContrast}:1以上)
+                        </span>
                         <span class="${isGoodForSmallText ? 'good-contrast' : 'bad-contrast'}">
                             ${isGoodForSmallText ? '✓' : '✗'} 通常テキスト (4.5:1以上)
                         </span>
@@ -1203,6 +1325,37 @@
                 
                 contrastResults.appendChild(contrastItem);
             });
+            
+            // メインカラー同士のコントラスト比も評価
+            if (colorsToCheck.length >= 2) {
+                const mainColor = colorsToCheck.find(color => color.role.includes('メイン'));
+                
+                if (mainColor) {
+                    const mainRgb = hexToRgb(mainColor.hex);
+                    
+                    colorsToCheck.filter(color => color !== mainColor).forEach(color => {
+                        const colorRgb = hexToRgb(color.hex);
+                        const ratio = getContrastRatio(mainRgb, colorRgb);
+                        const ratioText = ratio.toFixed(2);
+                        
+                        const isGoodForRequirement = ratio >= requiredContrast;
+                        
+                        const contrastItem = document.createElement('div');
+                        contrastItem.innerHTML = `
+                            <p>
+                                <span class="color-swatch" style="background-color: ${mainColor.hex}"></span> vs 
+                                <span class="color-swatch" style="background-color: ${color.hex}"></span>
+                                コントラスト比: ${ratioText}:1 
+                                <span class="${isGoodForRequirement ? 'good-contrast' : 'bad-contrast'}">
+                                    ${isGoodForRequirement ? '✓' : '✗'} メインカラー間 (${requiredContrast}:1以上)
+                                </span>
+                            </p>
+                        `;
+                        
+                        contrastResults.appendChild(contrastItem);
+                    });
+                }
+            }
         }
         
         // イベントリスナー
