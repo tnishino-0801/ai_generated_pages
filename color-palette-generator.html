@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webデザイン カラーパレット生成ツール</title>
+    <style>
+        :root {
+            --primary: #3a86ff;
+            --secondary: #ff006e;
+            --neutral: #f8f9fa;
+            --dark: #212529;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: var(--neutral);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin: 25px 0 15px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .control-panel {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .color-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .color-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .color-input input[type="color"] {
+            width: 50px;
+            height: 40px;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .color-input input[type="checkbox"] {
+            margin-left: 5px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #2978e2;
+        }
+        
+        .palette-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .palette-display {
+            display: flex;
+            margin-bottom: 20px;
+            height: 200px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .color-block {
+            position: relative;
+            transition: flex-basis 0.3s;
+        }
+        
+        .color-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .color-hex {
+            font-weight: bold;
+        }
+        
+        .color-role {
+            font-size: 0.75rem;
+        }
+        
+        .color-percentage {
+            font-size: 0.75rem;
+        }
+        
+        .palette-info {
+            margin-top: 20px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .table th, .table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        
+        .table th {
+            background-color: #f5f5f5;
+        }
+        
+        .color-swatch {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        
+        .harmony-info {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .contrast-info {
+            margin-top: 15px;
+        }
+        
+        .good-contrast {
+            color: green;
+        }
+        
+        .bad-contrast {
+            color: red;
+        }
+        
+        @media (max-width: 768px) {
+            .palette-display {
+                height: 150px;
+            }
+            
+            .color-info {
+                font-size: 0.7rem;
+                padding: 3px 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Webデザイン カラーパレット生成ツール</h1>
+        <p>色彩理論に基づいた調和のとれたカラーパレットを生成します</p>
+    </header>
+    
+    <div class="container">
+        <div class="control-panel">
+            <h2>設定</h2>
+            <div class="form-group">
+                <label for="colorCount">生成する色数 (3-7)</label>
+                <input type="range" id="colorCount" class="form-control" min="3" max="7" value="5" oninput="updateColorInputs()">
+                <span id="colorCountDisplay">5</span>
+            </div>
+            
+            <div class="form-group">
+                <label>固定する色（最大3色まで）</label>
+                <div class="color-inputs" id="colorInputs">
+                    <!-- ここに色入力が動的に生成されます -->
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="harmonyType">配色理論</label>
+                <select id="harmonyType" class="form-control">
+                    <option value="random">ランダム選択</option>
+                    <option value="monochromatic">モノクロマティック</option>
+                    <option value="analogous">類似色</option>
+                    <option value="complementary">補色</option>
+                    <option value="split-complementary">分割補色</option>
+                    <option value="triadic">トライアド</option>
+                    <option value="tetradic">テトラード</option>
+                </select>
+            </div>
+            
+            <button id="generateBtn" class="btn">カラーパレットを生成</button>
+        </div>
+        
+        <div class="palette-container">
+            <h2>生成されたカラーパレット</h2>
+            <div class="palette-display" id="paletteDisplay">
+                <!-- ここにカラーパレットが動的に生成されます -->
+            </div>
+            
+            <div class="palette-info">
+                <h3>色の詳細</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>色</th>
+                            <th>HEX</th>
+                            <th>役割</th>
+                            <th>推奨面積比率</th>
+                        </tr>
+                    </thead>
+                    <tbody id="colorTable">
+                        <!-- ここに色の詳細が動的に生成されます -->
+                    </tbody>
+                </table>
+                
+                <div class="harmony-info" id="harmonyInfo">
+                    <h3>使用された配色理論</h3>
+                    <p id="harmonyDescription">
+                        色彩理論に基づいたパレットをまだ生成していません。「カラーパレットを生成」ボタンをクリックしてください。
+                    </p>
+                </div>
+                
+                <div class="contrast-info" id="contrastInfo">
+                    <h3>コントラスト評価</h3>
+                    <p>
+                        WCAGガイドラインでは、テキストの可読性のために4.5:1以上のコントラスト比が推奨されています。
+                    </p>
+                    <div id="contrastResults">
+                        <!-- ここにコントラスト評価が動的に生成されます -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ユーティリティ関数
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+        
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+        
+        function hslToRgb(h, s, l) {
+            h /= 360;
+            s /= 100;
+            l /= 100;
+            let r, g, b;
+            
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            
+            return {
+                r: Math.round(r * 255),
+                g: Math.round(g * 255),
+                b: Math.round(b * 255)
+            };
+        }
+        
+        function rgbToHsl(r, g, b) {
+            r /= 255;
+            g /= 255;
+            b /= 255;
+            
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            
+            if (max === min) {
+                h = s = 0; // achromatic
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                
+                h /= 6;
+            }
+            
+            return {
+                h: Math.round(h * 360),
+                s: Math.round(s * 100),
+                l: Math.round(l * 100)
+            };
+        }
+        
+        function hexToHsl(hex) {
+            const rgb = hexToRgb(hex);
+            return rgbToHsl(rgb.r, rgb.g, rgb.b);
+        }
+        
+        function hslToHex(h, s, l) {
+            const rgb = hslToRgb(h, s, l);
+            return rgbToHex(rgb.r, rgb.g, rgb.b);
+        }
+        
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        function getLuminance(rgb) {
+            const a = [rgb.r, rgb.g, rgb.b].map(v => {
+                v /= 255;
+                return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+            });
+            return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+        }
+        
+        function getContrastRatio(rgb1, rgb2) {
+            const lum1 = getLuminance(rgb1);
+            const lum2 = getLuminance(rgb2);
+            const brightest = Math.max(lum1, lum2);
+            const darkest = Math.min(lum1, lum2);
+            return (brightest + 0.05) / (darkest + 0.05);
+        }
+        
+        // ユーザー入力処理
+        function updateColorInputs() {
+            const colorCount = document.getElementById('colorCount').value;
+            document.getElementById('colorCountDisplay').textContent = colorCount;
+            
+            const colorInputsContainer = document.getElementById('colorInputs');
+            colorInputsContainer.innerHTML = '';
+            
+            // 最大3色の固定色入力を生成
+            const maxFixedColors = Math.min(3, colorCount);
+            for (let i = 0; i < maxFixedColors; i++) {
+                const randomColor = getRandomColor();
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'color-input';
+                
+                const colorLabel = document.createElement('label');
+                colorLabel.textContent = `色 ${i + 1}:`;
+                
+                const colorInput = document.createElement('input');
+                colorInput.type = 'color';
+                colorInput.id = `fixedColor${i}`;
+                colorInput.value = randomColor;
+                
+                const checkboxLabel = document.createElement('label');
+                checkboxLabel.textContent = '固定';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `fixCheckbox${i}`;
+                
+                colorDiv.appendChild(colorLabel);
+                colorDiv.appendChild(colorInput);
+                colorDiv.appendChild(checkboxLabel);
+                colorDiv.appendChild(checkbox);
+                
+                colorInputsContainer.appendChild(colorDiv);
+            }
+        }
+        
+        function getRandomColor() {
+            return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+        }
+        
+        // カラーパレット生成ロジック
+        function generateColorPalette() {
+            const colorCount = parseInt(document.getElementById('colorCount').value);
+            const harmonyType = document.getElementById('harmonyType').value;
+            
+            // 固定色を収集
+            const fixedColors = [];
+            for (let i = 0; i < Math.min(3, colorCount); i++) {
+                const checkbox = document.getElementById(`fixCheckbox${i}`);
+                if (checkbox && checkbox.checked) {
+                    const colorInput = document.getElementById(`fixedColor${i}`);
+                    fixedColors.push(colorInput.value);
+                }
+            }
+            
+            let palette;
+            let usedHarmony = harmonyType;
+            
+            if (harmonyType === 'random') {
+                const harmonies = ['monochromatic', 'analogous', 'complementary', 'split-complementary', 'triadic', 'tetradic'];
+                usedHarmony = harmonies[Math.floor(Math.random() * harmonies.length)];
+            }
+            
+            switch (usedHarmony) {
+                case 'monochromatic':
+                    palette = generateMonochromatic(colorCount, fixedColors);
+                    break;
+                case 'analogous':
+                    palette = generateAnalogous(colorCount, fixedColors);
+                    break;
+                case 'complementary':
+                    palette = generateComplementary(colorCount, fixedColors);
+                    break;
+                case 'split-complementary':
+                    palette = generateSplitComplementary(colorCount, fixedColors);
+                    break;
+                case 'triadic':
+                    palette = generateTriadic(colorCount, fixedColors);
+                    break;
+                case 'tetradic':
+                    palette = generateTetradic(colorCount, fixedColors);
+                    break;
+                default:
+                    palette = generateAnalogous(colorCount, fixedColors);
+            }
+            
+            // 色の役割と面積比率を割り当て
+            assignRolesAndPercentages(palette);
+            
+            // パレットの表示
+            displayPalette(palette, usedHarmony);
+            
+            return palette;
+        }
+        
+        function generateMonochromatic(colorCount, fixedColors) {
+            let baseHsl;
+            
+            if (fixedColors.length > 0) {
+                baseHsl = hexToHsl(fixedColors[0]);
+            } else {
+                baseHsl = {
+                    h: getRandomInt(0, 360),
+                    s: getRandomInt(50, 90),
+                    l: getRandomInt(40, 60)
+                };
+            }
+            
+            const palette = [];
+            
+            // 固定色を追加
+            for (const color of fixedColors) {
+                palette.push(color);
+            }
+            
+            // 残りの色を生成
+            while (palette.length < colorCount) {
+                // 同じ色相で明度と彩度を変える
+                let l = getRandomInt(20, 80);
+                let s = getRandomInt(30, 90);
+                
+                // 同じ色相の色が多すぎる場合の明度調整
+                if (palette.length > 2) {
+                    // 明るいものと暗いものを確保
+                    if (palette.length === colorCount - 1) {
+                        const existingLs = palette.map(c => hexToHsl(c).l);
+                        const avgL = existingLs.reduce((sum, val) => sum + val, 0) / existingLs.length;
+                        l = avgL < 50 ? getRandomInt(70, 90) : getRandomInt(10, 30);
+                    }
+                }
+                
+                palette.push(hslToHex(baseHsl.h, s, l));
+            }
+            
+            return palette;
+        }
+        
+        function generateAnalogous(colorCount, fixedColors) {
+            let baseHsl;
+            
+            if (fixedColors.length > 0) {
+                baseHsl = hexToHsl(fixedColors[0]);
+            } else {
+                baseHsl = {
+                    h: getRandomInt(0, 360),
+                    s: getRandomInt(50, 90),
+                    l: getRandomInt(40, 60)
+                };
+            }
+            
+            const palette = [];
+            
+            // 固定色を追加
+            for (const color of fixedColors) {
+                palette.push(color);
+            }
+            
+            // 残りの色を生成
+            const hueRange = 60; // 類似色の範囲
+            
+            while (palette.length < colorCount) {
+                // 基準色の色相から近い色相を選ぶ
+                let hueOffset = getRandomInt(-hueRange/2, hueRange/2);
+                let newHue = (baseHsl.h + hueOffset + 360) % 360;
+                
+                // すでに似た色相がある場合はより離す
+                const existingHues = palette.map(c => hexToHsl(c).h);
+                const tooClose = existingHues.some(h => Math.abs((h - newHue + 360) % 360) < 15);
+                
+                if (tooClose) {
+                    hueOffset = hueOffset > 0 ? hueOffset + 15 : hueOffset - 15;
+                    newHue = (baseHsl.h + hueOffset + 360) % 360;
+                }
+                
+                let s = getRandomInt(50, 90);
+                let l = getRandomInt(30, 70);
+                
+                // パレットの多様性のために明度差を付ける
+                if (palette.length >= 3) {
+                    // 既存の明度の平均を計算
+                    const existingLs = palette.map(c => hexToHsl(c).l);
+                    const avgL = existingLs.reduce((sum, val) => sum + val, 0) / existingLs.length;
+                    
+                    l = avgL < 50 ? getRandomInt(60, 80) : getRandomInt(20, 40);
+                }
+                
+                palette.push(hslToHex(newHue, s, l));
+            }
+            
+            return palette;
+        }
+        
+        function generateComplementary(colorCount, fixedColors) {
+            let baseHsl;
+            let compHsl;
+            
+            if (fixedColors.length > 0) {
+                baseHsl = hexToHsl(fixedColors[0]);
+                compHsl = {
+                    h: (baseHsl.h + 180) % 360,
+                    s: baseHsl.s,
+                    l: baseHsl.l
+                };
+            } else {
+                baseHsl = {
+                    h: getRandomInt(0, 360),
+                    s: getRandomInt(50, 90),
+                    l: getRandomInt(40, 60)
+                };
+                compHsl = {
+                    h: (baseHsl.h + 180) % 360,
+                    s: baseHsl.s,
+                    l: baseHsl.l
+                };
+            }
+            
+            const palette = [];
+            
+            // 固定色を追加
+            for (const color of fixedColors) {
+                palette.push(color);
+            }
+            
+            // 残りの色を生成
+            if (palette.length < colorCount) {
+                if (fixedColors.length === 0) {
+                    palette.push(hslToHex(baseHsl.h, baseHsl.s, baseHsl.l));
+                }
+                
+                if (palette.length < colorCount) {
+                    palette.push(hslToHex(compHsl.h, compHsl.s, compHsl.l));
+                }
+                
+                // さらに色が必要な場合は、両方の基準色のバリエーションを追加
+                while (palette.length < colorCount) {
+                    if (palette.length % 2 === 0) {
+                        // ベース色のバリエーション
+                        let s = getRandomInt(Math.max(30, baseHsl.s - 20), Math.min(100, baseHsl.s + 20));
+                        let l = getRandomInt(Math.max(20, baseHsl.l - 20), Math.min(80, baseHsl.l + 20));
+                        palette.push(hslToHex(baseHsl.h, s, l));
+                    } else {
+                        // 補色のバリエーション
+                        let s = getRandomInt(Math.max(30, compHsl.s - 20), Math.min(100, compHsl.s + 20));
+                        let l = getRandomInt(Math.max(20, compHsl.l - 20), Math.min(80, compHsl.l + 20));
+                        palette.push(hslToHex(compHsl.h, s, l));
+                    }
+                }
+            }
+            
+            return palette;
+        }
+        
+        function generateSplitComplementary(colorCount, fixedColors) {
+            let baseHsl;
+            
+            if (fixedColors.length > 0) {
+                baseHsl = hexToHsl(fixedColors[0]);
+            } else {
+                baseHsl = {
+                    h: getRandomInt(0, 360),
+                    s: getRandomInt(50, 90),
+                    l: getRandomInt(40, 60)
+                };
+            }
+            
+            // 分割補色の色相を計算
+            const comp1Hsl = {
+                h: (baseHsl.h + 150) % 360,
+                s: baseHsl.s,
+                l: baseHsl.l
+            };
+            
+            const comp2Hsl = {
+                h: (baseHsl.h + 210) % 360,
+                s: baseHsl.s,
+                l: baseHsl.l
+            };
+            
+            const palette = [];
+            
+            // 固定色を追加
+            for (const color of fixedColors) {
+                palette.push(color);
+            }
+            
+            // 残りの色を生成
+            if (palette.length < colorCount) {
+                if (fixedColors.length === 0 || !fixedColors.some(c => {
+                    const hsl = hexToHsl(c);
+                    return Math.abs((hsl.h - baseHsl.h + 360) % 360) < 15;
+                })) {
+                    palette.push(hslToHex(baseHsl.h, baseHsl.s, baseHsl.l));
+                }
+                
+                if (palette.length < colorCount) {
+                    palette.push(hslToHex(comp1Hsl.h, comp1Hsl.s, comp1Hsl.l));
+                }
+                
+                if (palette.length < colorCount) {
+                    palette.push(hslToHex(comp2Hsl.h, comp2Hsl.s, comp2Hsl.l));
+                }
+                
+                // さらに色が必要な場合はバリエーションを追加
+                const baseColors = [baseHsl, comp1Hsl, comp2Hsl];
+                let index = 0;
+                
+                while (palette.length < colorCount) {
+                    const currentBase = baseColors[index % 3];
+                    
+                    // 明度と彩度のバリエーション
+                    let s = getRandomInt(Math.max(30, currentBase.s - 20), Math.min(100, currentBase.s + 20));
+                    let l = getRandomInt(Math.max(20, currentBase.l - 20), Math.min(80, currentBase.l + 20));
+                    
+                    palette.push(hslToHex(currentBase.h, s, l));
+                    index++;
+                }
+            }
+            
+            return palette;
+        }
+        
+        function generateTriadic(colorCount, fixedColors) {
+            let baseHsl;
+            
+            if (fixedColors.length > 0) {
+                baseHsl = hexToHsl(fixedColors[0]);
+            } else {
+                baseHsl = {
+                    h: getRandomInt(0, 360),
+                    s: getRandomInt(50, 90),
+                    l: getRandomInt(40, 60)
+                };
+            }
+            
+            // トライアドの色相を計算（120度ずつ離れた3色）
+            const triad1Hsl = {
+                h: (baseHsl.h + 120) % 360,
+                s: baseHsl.s,
+                l: baseHsl.l
+            };
+            
+            const triad2Hsl = {
+                h: (baseHsl.h + 240) % 360,
+                s: baseHsl.s,
+                l: baseHsl.l
+            };
+            
+            const palette = [];
+            
+            // 固定色を追加
+            for (const color of fixedColors) {
+                palette.push(color);
+            }
+            
+            // 残りの色を生成
+            if (palette.length < colorCount) {
+                if (fixedColors.length === 0) {
+                    palette.push(hslToHex(baseHsl.h, baseHsl.s, baseHsl.l));
+                }
+                
+                if (palette.length < colorCount) {
+                    palette.push(hslToHex(triad1Hsl.h, triad1Hsl.s, triad1Hsl.l));
+                }
+                
+                if (palette.length < colorCount) {
+                    palette.push(hslToHex(triad2Hsl.h, triad2Hsl.s, triad2Hsl.l));
+                }
+                
+                // さらに色が必要な場合はバリエーションを追加
+                const baseColors = [baseHsl, triad1Hsl, triad2Hsl];
+                let index = 0;
+                
+                while (palette.length < colorCount) {
+                    const currentBase = baseColors[index % 3];
+                    
+                    // 明度と彩度のバリエーション
+                    let s = getRandomInt(Math.max(30, currentBase.s - 20), Math.min(100, currentBase.s + 20));
+                    let l = getRandomInt(Math.max(20, currentBase.l - 20), Math.min(80, currentBase.l + 20));
+                    
+                    palette.push(hslToHex(currentBase.h, s, l));
+                    index++;
+                }
+            }
+            
+            return palette;
+        }
+        
+        function generateTetradic(colorCount, fixedColors) {
+            let baseHsl;
+            
+            if (fixedColors.length > 0) {
+                baseHsl = hexToHsl(fixedColors[0]);
+            } else {
+                baseHsl = {
+                    h: getRandomInt(0, 360),
+                    s: getRandomInt(50, 90),
+                    l: getRandomInt(40, 60)
+                };
+            }
+            
+            // テトラードの色相を計算（90度ずつ離れた4色）
+            const tetrad1Hsl = {
+                h: (baseHsl.h + 90) % 360,
+                s: baseHsl.s,
+                l: baseHsl.l
+            };
+            
+            const tetrad2Hsl = {
+                h: (baseHsl.h + 180) % 360,
+                s: baseHsl.s,
+                l: baseHsl.l
+            };
+            
+            const tetrad3Hsl = {
+                h: (baseHsl.h + 270) % 360,
+                s: baseHsl.s,
+                l: baseHsl.l
+            };
+            
+            const palette = [];
+            
+            // 固定色を追加
+            for (const color of fixedColors) {
+                palette.push(color);
+            }
+            
+            // 残りの色を生成
+            if (palette.length < colorCount) {
+                if (fixedColors.length === 0) {
+                    palette.push(hslToHex(baseHsl.h, baseHsl.s, baseHsl.l));
+                }
+                
+                if (palette.length < colorCount) {
+                    palette.push(hslToHex(tetrad1Hsl.h, tetrad1Hsl.s, tetrad1Hsl.l));
+                }
+                
+                if (palette.length < colorCount) {
+                    palette.push(hslToHex(tetrad2Hsl.h, tetrad2Hsl.s, tetrad2Hsl.l));
+                }
+                
+                if (palette.length < colorCount) {
+                    palette.push(hslToHex(tetrad3Hsl.h, tetrad3Hsl.s, tetrad3Hsl.l));
+                }
+                
+                // さらに色が必要な場合はバリエーションを追加
+                const baseColors = [baseHsl, tetrad1Hsl, tetrad2Hsl, tetrad3Hsl];
+                let index = 0;
+                
+                while (palette.length < colorCount) {
+                    const currentBase = baseColors[index % 4];
+                    
+                    // 明度と彩度のバリエーション
+                    let s = getRandomInt(Math.max(30, currentBase.s - 20), Math.min(100, currentBase.s + 20));
+                    let l = getRandomInt(Math.max(20, currentBase.l - 20), Math.min(80, currentBase.l + 20));
+                    
+                    palette.push(hslToHex(currentBase.h, s, l));
+                    index++;
+                }
+            }
+            
+            return palette;
+        }
+        
+        function assignRolesAndPercentages(palette) {
+            // 文脈に応じた色の役割と使用率の割り当て
+            const colorCount = palette.length;
+            
+            // 各色のHSL値を計算
+            const hslValues = palette.map(color => hexToHsl(color));
+            
+            // 明度に基づいてソート
+            const sortedByLightness = [...hslValues].sort((a, b) => a.l - b.l);
+            const darkestHsl = sortedByLightness[0];
+            const lightestHsl = sortedByLightness[sortedByLightness.length - 1];
+            
+            // 役割と割合の初期化
+            palette.forEach((color, index) => {
+                palette[index] = {
+                    hex: color,
+                    role: '',
+                    percentage: 0
+                };
+            });
+            
+            // 色数に応じて役割と割合を割り当て
+            if (colorCount === 3) {
+                // 3色の場合
+                palette[0].role = 'ベースカラー';
+                palette[0].percentage = 60;
+                
+                palette[1].role = 'メインカラー';
+                palette[1].percentage = 30;
+                
+                palette[2].role = 'アクセントカラー';
+                palette[2].percentage = 10;
+            } else if (colorCount === 4) {
+                // 4色の場合
+                palette[0].role = 'ベースカラー';
+                palette[0].percentage = 50;
+                
+                palette[1].role = 'メインカラー';
+                palette[1].percentage = 25;
+                
+                palette[2].role = 'セカンダリーカラー';
+                palette[2].percentage = 15;
+                
+                palette[3].role = 'アクセントカラー';
+                palette[3].percentage = 10;
+            } else if (colorCount === 5) {
+                // 5色の場合
+                palette[0].role = 'ベースカラー';
+                palette[0].percentage = 45;
+                
+                palette[1].role = 'メインカラー';
+                palette[1].percentage = 25;
+                
+                palette[2].role = 'セカンダリーカラー';
+                palette[2].percentage = 15;
+                
+                palette[3].role = 'アクセントカラー1';
+                palette[3].percentage = 10;
+                
+                palette[4].role = 'アクセントカラー2';
+                palette[4].percentage = 5;
+            } else if (colorCount === 6) {
+                // 6色の場合
+                palette[0].role = 'ベースカラー';
+                palette[0].percentage = 40;
+                
+                palette[1].role = 'メインカラー';
+                palette[1].percentage = 20;
+                
+                palette[2].role = 'セカンダリーカラー1';
+                palette[2].percentage = 15;
+                
+                palette[3].role = 'セカンダリーカラー2';
+                palette[3].percentage = 10;
+                
+                palette[4].role = 'アクセントカラー1';
+                palette[4].percentage = 10;
+                
+                palette[5].role = 'アクセントカラー2';
+                palette[5].percentage = 5;
+            } else if (colorCount === 7) {
+                // 7色の場合
+                palette[0].role = 'ベースカラー';
+                palette[0].percentage = 35;
+                
+                palette[1].role = 'メインカラー';
+                palette[1].percentage = 20;
+                
+                palette[2].role = 'セカンダリーカラー1';
+                palette[2].percentage = 15;
+                
+                palette[3].role = 'セカンダリーカラー2';
+                palette[3].percentage = 10;
+                
+                palette[4].role = 'アクセントカラー1';
+                palette[4].percentage = 10;
+                
+                palette[5].role = 'アクセントカラー2';
+                palette[5].percentage = 5;
+                
+                palette[6].role = 'アクセントカラー3';
+                palette[6].percentage = 5;
+            }
+            
+            // 色の役割を色の特性に合わせて最適化
+            // 最も明るい色をベースカラーに
+            const lightestIndex = palette.findIndex(color => hexToHsl(color.hex).l === lightestHsl.l);
+            
+            // 最も暗い色をアクセントカラーに
+            const darkestIndex = palette.findIndex(color => hexToHsl(color.hex).l === darkestHsl.l);
+            
+            // 最も彩度の高い色をアクセントカラーに
+            const mostSaturatedHsl = [...hslValues].sort((a, b) => b.s - a.s)[0];
+            const mostSaturatedIndex = palette.findIndex(color => {
+                const hsl = hexToHsl(color.hex);
+                return hsl.h === mostSaturatedHsl.h && hsl.s === mostSaturatedHsl.s && hsl.l === mostSaturatedHsl.l;
+            });
+            
+            // 色数が4以上の場合、役割を最適化
+            if (colorCount >= 4) {
+                // ベースカラーには明るめの色を
+                const temp = palette[0].hex;
+                palette[0].hex = palette[lightestIndex].hex;
+                palette[lightestIndex].hex = temp;
+                
+                // アクセントカラーには彩度高め、暗めの色を
+                const lastIndex = colorCount - 1;
+                
+                // 最も彩度の高い色をアクセントカラー1に
+                if (mostSaturatedIndex !== lastIndex) {
+                    const temp = palette[lastIndex].hex;
+                    palette[lastIndex].hex = palette[mostSaturatedIndex].hex;
+                    palette[mostSaturatedIndex].hex = temp;
+                }
+                
+                // 二番目に暗い色をセカンダリーカラーに
+                if (colorCount >= 5) {
+                    const secondDarkestHsl = sortedByLightness[1];
+                    const secondDarkestIndex = palette.findIndex(color => {
+                        const hsl = hexToHsl(color.hex);
+                        return hsl.h === secondDarkestHsl.h && hsl.s === secondDarkestHsl.s && hsl.l === secondDarkestHsl.l;
+                    });
+                    
+                    if (secondDarkestIndex !== 2) {
+                        const temp = palette[2].hex;
+                        palette[2].hex = palette[secondDarkestIndex].hex;
+                        palette[secondDarkestIndex].hex = temp;
+                    }
+                }
+            }
+            
+            return palette;
+        }
+        
+        function displayPalette(palette, harmonyType) {
+            const paletteDisplay = document.getElementById('paletteDisplay');
+            const colorTable = document.getElementById('colorTable');
+            const harmonyInfo = document.getElementById('harmonyDescription');
+            const contrastResults = document.getElementById('contrastResults');
+            
+            paletteDisplay.innerHTML = '';
+            colorTable.innerHTML = '';
+            contrastResults.innerHTML = '';
+            
+            // 配色理論の説明
+            setHarmonyDescription(harmonyType);
+            
+            // 各色をパレットと表に表示
+            palette.forEach(color => {
+                // パレットディスプレイに追加
+                const colorBlock = document.createElement('div');
+                colorBlock.className = 'color-block';
+                colorBlock.style.backgroundColor = color.hex;
+                colorBlock.style.flexBasis = `${color.percentage}%`;
+                
+                const colorInfo = document.createElement('div');
+                colorInfo.className = 'color-info';
+                
+                const colorHex = document.createElement('div');
+                colorHex.className = 'color-hex';
+                colorHex.textContent = color.hex;
+                
+                const colorRole = document.createElement('div');
+                colorRole.className = 'color-role';
+                colorRole.textContent = color.role;
+                
+                const colorPercentage = document.createElement('div');
+                colorPercentage.className = 'color-percentage';
+                colorPercentage.textContent = `${color.percentage}%`;
+                
+                colorInfo.appendChild(colorHex);
+                colorInfo.appendChild(colorRole);
+                colorInfo.appendChild(colorPercentage);
+                
+                colorBlock.appendChild(colorInfo);
+                paletteDisplay.appendChild(colorBlock);
+                
+                // テーブルに追加
+                const row = document.createElement('tr');
+                
+                const colorCell = document.createElement('td');
+                const colorSwatch = document.createElement('span');
+                colorSwatch.className = 'color-swatch';
+                colorSwatch.style.backgroundColor = color.hex;
+                colorCell.appendChild(colorSwatch);
+                
+                const hexCell = document.createElement('td');
+                hexCell.textContent = color.hex;
+                
+                const roleCell = document.createElement('td');
+                roleCell.textContent = color.role;
+                
+                const percentageCell = document.createElement('td');
+                percentageCell.textContent = `${color.percentage}%`;
+                
+                row.appendChild(colorCell);
+                row.appendChild(hexCell);
+                row.appendChild(roleCell);
+                row.appendChild(percentageCell);
+                
+                colorTable.appendChild(row);
+            });
+            
+            // コントラスト評価
+            evaluateContrast(palette);
+        }
+        
+        function setHarmonyDescription(harmonyType) {
+            const harmonyInfo = document.getElementById('harmonyDescription');
+            
+            switch(harmonyType) {
+                case 'monochromatic':
+                    harmonyInfo.innerHTML = `
+                        <strong>モノクロマティック配色</strong>は、単一の色相の明度と彩度のバリエーションから構成されます。
+                        調和が取れており、統一感のあるデザインに適しています。明度差を大きくすることで、
+                        視覚的な階層構造を作り出すことができます。
+                    `;
+                    break;
+                case 'analogous':
+                    harmonyInfo.innerHTML = `
+                        <strong>類似色配色</strong>は、色相環上で隣接した色を使用します。
+                        自然で調和がとれた印象を与え、落ち着いた雰囲気を作り出します。
+                        Webデザインにおいては、ユーザーに安心感を与えるのに適しています。
+                    `;
+                    break;
+                case 'complementary':
+                    harmonyInfo.innerHTML = `
+                        <strong>補色配色</strong>は、色相環上で対極にある色を組み合わせます。
+                        強い視覚的コントラストを生み出し、活力とエネルギーを表現します。
+                        アクセントカラーとしての補色使用が特に効果的です。
+                    `;
+                    break;
+                case 'split-complementary':
+                    harmonyInfo.innerHTML = `
+                        <strong>分割補色配色</strong>は、基準となる色とその補色の両隣の色を使用します。
+                        通常の補色配色より調和がとれており、視覚的な緊張感と多様性のバランスに優れています。
+                        初心者でも使いやすい配色スキームとして知られています。
+                    `;
+                    break;
+                case 'triadic':
+                    harmonyInfo.innerHTML = `
+                        <strong>トライアド配色</strong>は、色相環上で等間隔に3色を選択します。
+                        活気があり調和のとれた配色で、視覚的な多様性を確保しながらもバランスが取れています。
+                        1色を主役に、他の2色を補助的に使うとより効果的です。
+                    `;
+                    break;
+                case 'tetradic':
+                    harmonyInfo.innerHTML = `
+                        <strong>テトラード配色</strong>は、色相環上で等間隔または長方形を形成する4色を使用します。
+                        非常に表現力豊かで多様性のある配色ですが、バランスを取るのが難しい場合もあります。
+                        1色を主役にし、他の色は補助的に使うことでまとまりが出ます。
+                    `;
+                    break;
+            }
+        }
+        
+        function evaluateContrast(palette) {
+            const contrastResults = document.getElementById('contrastResults');
+            contrastResults.innerHTML = '';
+            
+            // ベースカラーまたは最も明るい色をバックグラウンドとして使用
+            const baseColor = palette.find(color => color.role.includes('ベース')) || 
+                              palette.reduce((prev, current) => {
+                                  const prevHsl = hexToHsl(prev.hex);
+                                  const currHsl = hexToHsl(current.hex);
+                                  return prevHsl.l > currHsl.l ? prev : current;
+                              });
+            
+            const baseRgb = hexToRgb(baseColor.hex);
+            
+            // 各色（アクセントカラーと暗い色を優先）との間のコントラスト比をチェック
+            const colorsToCheck = palette.filter(color => 
+                color.role.includes('アクセント') || 
+                color.role.includes('メイン') || 
+                color.role.includes('セカンダリー')
+            ).sort((a, b) => {
+                const aHsl = hexToHsl(a.hex);
+                const bHsl = hexToHsl(b.hex);
+                return aHsl.l - bHsl.l; // 暗い色を優先
+            });
+            
+            colorsToCheck.forEach(color => {
+                const colorRgb = hexToRgb(color.hex);
+                const ratio = getContrastRatio(baseRgb, colorRgb);
+                const ratioText = ratio.toFixed(2);
+                
+                const isGoodForSmallText = ratio >= 4.5;
+                const isGoodForLargeText = ratio >= 3;
+                
+                const contrastItem = document.createElement('div');
+                contrastItem.innerHTML = `
+                    <p>
+                        <span class="color-swatch" style="background-color: ${baseColor.hex}"></span> vs 
+                        <span class="color-swatch" style="background-color: ${color.hex}"></span>
+                        コントラスト比: ${ratioText}:1 
+                        <span class="${isGoodForSmallText ? 'good-contrast' : 'bad-contrast'}">
+                            ${isGoodForSmallText ? '✓' : '✗'} 通常テキスト (4.5:1以上)
+                        </span>
+                        <span class="${isGoodForLargeText ? 'good-contrast' : 'bad-contrast'}">
+                            ${isGoodForLargeText ? '✓' : '✗'} 大きなテキスト (3:1以上)
+                        </span>
+                    </p>
+                `;
+                
+                contrastResults.appendChild(contrastItem);
+            });
+        }
+        
+        // イベントリスナー
+        window.addEventListener('DOMContentLoaded', () => {
+            updateColorInputs();
+            
+            document.getElementById('colorCount').addEventListener('input', updateColorInputs);
+            document.getElementById('generateBtn').addEventListener('click', generateColorPalette);
+        });
+    </script>
+</body>
+</html>
